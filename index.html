@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ca" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mari Fernández Belmonte | Recursos Educatius</title>
+    <!-- Tailwind CSS per al disseny -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Montserrat per a un look professional i amable -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons per a les icones -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        /* Personalització de la paleta de colors suaus */
+        .bg-custom-blue { background-color: #e0f2fe; } /* Blau cel suau */
+        .bg-custom-mint { background-color: #ecfdf5; } /* Verd menta suau */
+        .bg-custom-yellow { background-color: #fefce8; } /* Groc càlid suau */
+        
+        .transition-all { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- HEADER: Navegació i Nom -->
+    <header class="fixed w-full bg-white/80 backdrop-blur-md shadow-sm z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- El teu nom: Pots canviar la mida o el pes de la font aquí -->
+            <div class="text-2xl font-bold text-blue-600 tracking-tight">
+                Mari Fernández Belmonte
+            </div>
+            
+            <!-- Menú d'escriptori -->
+            <div class="hidden md:flex space-x-8 font-medium">
+                <a href="#inici" class="hover:text-blue-500 transition-colors">Inici</a>
+                <a href="#categories" class="hover:text-blue-500 transition-colors">Categories</a>
+                <a href="#recursos" class="hover:text-blue-500 transition-colors">Recursos</a>
+                <a href="#contacte" class="hover:text-blue-500 transition-colors">Contacte</a>
+            </div>
+
+            <!-- Botó menú mòbil (simple) -->
+            <div class="md:hidden">
+                <i data-lucide="menu" class="cursor-pointer"></i>
+            </div>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION: Benvinguda -->
+    <section id="inici" class="pt-32 pb-20 px-6 bg-gradient-to-b from-blue-50 to-white">
+        <div class="container mx-auto text-center max-w-4xl">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6">
+                Explorant el coneixement a través del <span class="text-blue-600">joc</span> i la <span class="text-emerald-600">ciència</span>.
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed">
+                Benvinguts al meu espai personal de recursos. Aquí trobaràs des de minijocs per als més petits fins a continguts avançats de Física i Química per a l'ESO.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#categories" class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl">
+                    Començar a explorar
+                </a>
+                <a href="#recursos" class="bg-white border-2 border-slate-200 text-slate-700 px-8 py-3 rounded-full font-semibold hover:border-blue-400 transition-all">
+                    Veure destacats
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CATEGORIES: Grid de 3 -->
+    <section id="categories" class="py-20 px-6">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-16">Àrees de Coneixement</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Categoria: Minijocs -->
+                <div class="bg-custom-yellow p-8 rounded-3xl border border-yellow-100 hover:scale-105 transition-all cursor-default shadow-sm hover:shadow-md">
+                    <div class="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center mb-6 text-white shadow-inner">
+                        <i data-lucide="gamepad-2"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-yellow-800">Minijocs per nens</h3>
+                    <p class="text-yellow-900/70 mb-6">Activitats lúdiques i interactives per aprendre jugant de forma segura i intuïtiva.</p>
+                    <span class="inline-block text-yellow-700 font-semibold text-sm">Explora l'oci educatiu &rarr;</span>
+                </div>
+
+                <!-- Categoria: Física i Química -->
+                <div class="bg-custom-blue p-8 rounded-3xl border border-blue-100 hover:scale-105 transition-all cursor-default shadow-sm hover:shadow-md">
+                    <div class="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 text-white shadow-inner">
+                        <i data-lucide="beaker"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-blue-800">Física i Química</h3>
+                    <p class="text-blue-900/70 mb-6">Recursos per a l'ESO: apunts, exercicis resolts i simulacions científiques pas a pas.</p>
+                    <span class="inline-block text-blue-700 font-semibold text-sm">Ciència per l'ESO &rarr;</span>
+                </div>
+
+                <!-- Categoria: Recursos Docents -->
+                <div class="bg-custom-mint p-8 rounded-3xl border border-emerald-100 hover:scale-105 transition-all cursor-default shadow-sm hover:shadow-md">
+                    <div class="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center mb-6 text-white shadow-inner">
+                        <i data-lucide="book-open"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-emerald-800">Recursos Docents</h3>
+                    <p class="text-emerald-900/70 mb-6">Materials per a professors, guies didàctiques i organització de continguts educatius.</p>
+                    <span class="inline-block text-emerald-700 font-semibold text-sm">Material professional &rarr;</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RECURSOS DESTACATS -->
+    <section id="recursos" class="py-20 px-6 bg-slate-100">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Recursos Destacats</h2>
+                    <p class="text-slate-500">Els jocs i materials més utilitzats de la plataforma.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- TARGETA: La Frase Secreta (Enllaç Extern) -->
+                <!-- Pots copiar i enganxar aquest bloc per afegir nous jocs -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-200 group">
+                    <div class="h-40 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white group-hover:opacity-90 transition-opacity">
+                        <!-- Icona visual del joc -->
+                        <i data-lucide="lock" size="48"></i>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-lg mb-2">La Frase Secreta</h4>
+                        <p class="text-slate-500 text-sm mb-4">Un desafiament d'enginy on hauràs de descobrir el missatge ocult. Ideal per a primària!</p>
+                        <!-- ENLLAÇ: Aquí és on poses la URL del teu joc -->
+                        <a href="https://marfebel.github.io/general/lafrasesecreta.html" target="_blank" class="inline-flex items-center text-blue-600 font-semibold hover:underline">
+                            Jugar ara <i data-lucide="external-link" class="ml-2 w-4"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Targeta de mostra 2 (Física) -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-200 group">
+                    <div class="h-40 bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center text-white group-hover:opacity-90 transition-opacity">
+                        <i data-lucide="atom" size="48"></i>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-lg mb-2">Taula Periòdica</h4>
+                        <p class="text-slate-500 text-sm mb-4">Recurs interactiu per aprendre els elements de la taula periòdica.</p>
+                        <a href="#" class="inline-flex items-center text-blue-600 font-semibold hover:underline">
+                            Explorar <i data-lucide="chevron-right" class="ml-1 w-4"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Targeta de mostra 3 (Mates) -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-200 group">
+                    <div class="h-40 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white group-hover:opacity-90 transition-opacity">
+                        <i data-lucide="divide" size="48"></i>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-lg mb-2">Càlcul Ràpid</h4>
+                        <p class="text-slate-500 text-sm mb-4">Entrena la teva ment amb aquestes operacions contra rellotge.</p>
+                        <a href="#" class="inline-flex items-center text-blue-600 font-semibold hover:underline">
+                            Jugar <i data-lucide="chevron-right" class="ml-1 w-4"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Targeta de mostra 4 (Química) -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-200 group">
+                    <div class="h-40 bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white group-hover:opacity-90 transition-opacity">
+                        <i data-lucide="flask-conical" size="48"></i>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-lg mb-2">Laboratori Virtual</h4>
+                        <p class="text-slate-500 text-sm mb-4">Simulacions de reaccions químiques bàsiques per a secundària.</p>
+                        <a href="#" class="inline-flex items-center text-blue-600 font-semibold hover:underline">
+                            Entrar <i data-lucide="chevron-right" class="ml-1 w-4"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER: Contacte i xarxes -->
+    <footer id="contacte" class="bg-slate-900 text-white py-16 px-6">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+            <div>
+                <h3 class="text-xl font-bold mb-4">Mari Fernández Belmonte</h3>
+                <p class="text-slate-400 text-sm">Compromesa amb l'educació pública de qualitat i el foment de les vocacions científiques a través de la tecnologia.</p>
+            </div>
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Navegació</h4>
+                <ul class="text-slate-400 space-y-2 text-sm">
+                    <li><a href="#inici" class="hover:text-white transition-colors">Inici</a></li>
+                    <li><a href="#categories" class="hover:text-white transition-colors">Categories</a></li>
+                    <li><a href="#recursos" class="hover:text-white transition-colors">Recursos</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Contacte</h4>
+                <div class="flex justify-center md:justify-start space-x-4">
+                    <!-- Icones de xarxes (substituir '#' pels teus perfils) -->
+                    <a href="#" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                        <i data-lucide="mail" class="w-5"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                        <i data-lucide="github" class="w-5"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                        <i data-lucide="linkedin" class="w-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="container mx-auto mt-12 pt-8 border-t border-slate-800 text-center text-slate-500 text-xs">
+            &copy; 2024 Mari Fernández Belmonte. Tots els drets reservats.
+        </div>
+    </footer>
+
+    <!-- Inicialització de les icones -->
+    <script>
+        lucide.createIcons();
+    </script>
+
+</body>
+</html>
