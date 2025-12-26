@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Detectiu de les Paraules - Joc Educatiu</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --secondary: #2196F3;
+            --accent: #FFC107;
+            --bg: #f0f4f8;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Pantalles */
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        .active { display: block; }
+
+        h1 { color: var(--secondary); font-size: 2rem; }
+
+        /* Botons */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover { transform: scale(1.05); }
+        .btn-blue { background: var(--secondary); }
+
+        /* Zones de Joc */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 4px solid transparent;
+            cursor: pointer;
+            font-size: 3rem;
+        }
+
+        .card:hover { border-color: var(--accent); }
+
+        /* Botó Pedagògic (Discret) */
+        #pedagogical-btn {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+        }
+
+        #pedagogical-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            z-index: 100;
+            max-width: 80%;
+            text-align: left;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .feedback { font-size: 1.5rem; font-weight: bold; margin-top: 20px; min-height: 1.6em; }
+    </style>
+</head>
+<body>
+
+    <div id="screen-start" class="screen active">
+        <h1>🔍 El Detectiu de les Paraules</h1>
+        <p>Hola, superdetectiu! Què vols fer avui?</p>
+        <button class="btn" onclick="startGame('guess')">Escoltar i Endevinar</button>
+        <button class="btn btn-blue" onclick="startGame('describe')">Mirar i Explicar</button>
+    </div>
+
+    <div id="screen-guess" class="screen">
+        <h2 id="clue-text">Escolta la pista...</h2>
+        <button class="btn btn-blue" onclick="repeatClue()">🔊 Torna a escoltar</button>
+        <div class="options-grid" id="guess-options"></div>
+        <div id="feedback-guess" class="feedback"></div>
+    </div>
+
+    <div id="screen-describe" class="screen">
+        <h2>Ets el mestre de les pistes!</h2>
+        <div id="target-image" style="font-size: 6rem; margin: 20px;"></div>
+        <p id="guide-question" style="font-style: italic; color: #555;"></p>
+        <button class="btn" onclick="nextDescribe()">Següent paraula</button>
+        <button class="btn btn-blue" onclick="showStart()">Tornar a l'inici</button>
+    </div>
+
+    <button id="pedagogical-btn" onclick="togglePedagogy()">i</button>
+    <div id="pedagogical-modal">
+        <h3>Informació Pedagògica (LOMLOE/DUA)</h3>
+        <p><strong>Objectiu:</strong> Desenvolupament de la consciència semàntica i expressió oral.</p>
+        <p><strong>Neuroeducació:</strong> Reducció de la càrrega cognitiva eliminant la inhibició negativa (tabú). Ús de multicanalitat (visual + auditiu).</p>
+        <p><strong>DUA:</strong> Suport de veu sintetitzada per a no lectors, iconografia d'alta claredat i feedback positiu no punitiu.</p>
+        <button onclick="togglePedagogy()">Tancar</button>
+    </div>
+
+    <script>
+        // BASE DE DADES DE PARAULES (Adaptada 5-6 anys)
+        const wordBank = [
+            { paraula: "Gat", icona: "🐱", pistes: ["És un animal amb bigotis", "Fa miau miau", "Li agrada caçar ratolins"], preguntes: ["De quin color és?", "Què menja?", "Com fa el seu so?"] },
+            { paraula: "Poma", icona: "🍎", pistes: ["És una fruita", "Pot ser vermella o verda", "És rodona i molt dolça"], preguntes: ["T'agrada menjar-ne?", "A on creixen les pomes?", "És tova o cruixent?"] },
+            { paraula: "Cotxe", icona: "🚗", pistes: ["Té quatre rodes", "Serveix per viatjar amb la família", "Fa bip-bip"], preguntes: ["Qui el condueix?", "De quin color t'agradaria?", "Per on circula?"] },
+            { paraula: "Sol", icona: "☀️", pistes: ["És al cel", "Ens dona llum i calor", "Surt de dia"], preguntes: ["Quan el veiem?", "De quin color és?", "Què ens posem per protegir-nos d'ell?"] }
+     
+    // --- ANIMALS (25) ---
+    { paraula: "Gat", icona: "🐱", pistes: ["Té bigotis i fa miau", "Li agrada la llet", "És molt silenciós"], preguntes: ["Com fa el seu so?", "Té el pèl suau?", "On dorm?"] },
+    { paraula: "Gos", icona: "🐶", pistes: ["És el millor amic de l'home", "Fa bub-bub", "Mou la cua quan està content"], preguntes: ["Com es diu el teu gos preferit?", "Què mengen els gossos?", "Té orelles grans?"] },
+    { paraula: "Lleó", icona: "🦁", pistes: ["És el rei de la selva", "Té una gran cabellera", "Fa un rugit molt fort"], preguntes: ["Fa por o és valent?", "De quin color és?", "On viu?"] },
+    { paraula: "Elefant", icona: "🐘", pistes: ["És un animal molt gran", "Té una trompa llarga", "Té unes orelles gegants"], preguntes: ["Com bufa per la trompa?", "Pesa molt o poc?", "Què fa amb les orelles?"] },
+    { paraula: "Mico", icona: "🐒", pistes: ["Li agrada molt enfilar-se als arbres", "Menja plàtans", "És molt trapella"], preguntes: ["Com salta?", "Què menja?", "Fa ganyotes?"] },
+    { paraula: "Vaca", icona: "🐄", pistes: ["Ens dóna la llet", "Diu muuuu", "Menja herba"], preguntes: ["De quin color és la llet?", "Què té al cap?", "És gran o petita?"] },
+    { paraula: "Gallina", icona: "🐔", pistes: ["Posa ous", "Té plomes", "Diu coc-xoc"], preguntes: ["Què neix dels seus ous?", "Té bec?", "Quantes potes té?"] },
+    { paraula: "Porc", icona: "🐷", pistes: ["És de color rosa", "Li agrada el fang", "Té el nas xato"], preguntes: ["Quin so fa?", "Té la cua rinxolada?", "Està brut o net?"] },
+    { paraula: "Cavall", icona: "🐴", pistes: ["Podem anar al seu damunt", "Corre molt ràpid", "Menja palla"], preguntes: ["Com fa quan corre?", "Té una cua llarga?", "És alt o baix?"] },
+    { paraula: "Ocell", icona: "🐦", pistes: ["Té ales i vola pel cel", "Viu en un niu", "Canta pel matí"], preguntes: ["De quin color són les seves ales?", "Què menja?", "Com vola?"] },
+    { paraula: "Peix", icona: "🐟", pistes: ["Viu sota l'aigua", "Té escates", "Neda molt bé"], preguntes: ["Pot respirar fora de l'aigua?", "Com mou la cua?", "On viu?"] },
+    { paraula: "Abella", icona: "🐝", pistes: ["Fa mel", "Té ratlles grogues i negres", "Fa zzzzz"], preguntes: ["Pica si la molestes?", "On viu?", "T'agrada la mel?"] },
+    { paraula: "Formiga", icona: "🐜", pistes: ["És molt petita", "Treballa molt", "Viu sota terra"], preguntes: ["És forta o fluixa?", "De quin color és?", "Quantes n'has vist juntes?"] },
+    { paraula: "Aranya", icona: "🕷️", pistes: ["Té vuit potes", "Fa teranyines", "Camina per la paret"], preguntes: ["Et fa por?", "Quantes potes té?", "On fa la seva caseta?"] },
+    { paraula: "Tortuga", icona: "🐢", pistes: ["Camina molt a poc a poc", "Té una closca dura", "S'amaga el cap"], preguntes: ["És ràpida o lenta?", "La seva closca és tova?", "On es guarda?"] },
+    { paraula: "Granota", icona: "🐸", pistes: ["És de color verd", "Fa salts molt llargs", "Diu rauca-rauca"], preguntes: ["On viu?", "De quin color és?", "Què menja?"] },
+    { paraula: "Ós", icona: "🐻", pistes: ["És gran i pelut", "Li agrada la mel", "Dorm tot l'hivern"], preguntes: ["Té el pèl suau?", "És gran?", "Sembla un peluix?"] },
+    { paraula: "Girafa", icona: "🦒", pistes: ["Té el coll molt llarg", "Arriba a les fulles més altes", "Té taques a la pell"], preguntes: ["Com de llarg és el seu coll?", "És més alta que tu?", "Què menja?"] },
+    { paraula: "Conill", icona: "🐰", pistes: ["Té les orelles llargues", "Menja pastanagues", "Fa salts"], preguntes: ["Com té el pèl?", "Què menja?", "Com mou el nas?"] },
+    { paraula: "Ovella", icona: "🐑", pistes: ["Ens dóna la llana", "Diu bee-bee", "Viu al prat"], preguntes: ["Com és el seu pèl?", "De quin color és?", "Què mengen?"] },
+    { paraula: "Pingüí", icona: "🐧", pistes: ["Viu al gel", "Camina gronxant-se", "Vesteix de blanc i negre"], preguntes: ["Té fred?", "Sap volar?", "On viu?"] },
+    { paraula: "Balena", icona: "🐋", pistes: ["És l'animal més gran del mar", "Tira aigua pel cap", "Neda molt lluny"], preguntes: ["És més gran que un vaixell?", "On viu?", "Té dents o barbes?"] },
+    { paraula: "Serp", icona: "🐍", pistes: ["No té potes", "S'arrossega per terra", "Té la llengua bífida"], preguntes: ["Quin so fa amb la llengua?", "És llarga o curta?", "Com camina?"] },
+    { paraula: "Tauró", icona: "🦈", pistes: ["Té moltes dents", "Té una aleta a l'esquena", "Viu al mar"], preguntes: ["Fa por?", "Com neda?", "És ràpid?"] },
+    { paraula: "Ratolí", icona: "🐭", pistes: ["Li agrada el formatge", "És molt petit", "Té una cua llarga"], preguntes: ["Qui el persegueix?", "Com fa el seu so?", "On s'amaga?"] },
+
+    // --- MENJAR (20) ---
+    { paraula: "Poma", icona: "🍎", pistes: ["És una fruita rodona", "Pot ser vermella o verda", "És cruixent"], preguntes: ["T'agrada?", "A quin arbre neix?", "És dolça?"] },
+    { paraula: "Plàtan", icona: "🍌", pistes: ["És de color groc", "S'ha de pelar", "Té forma de lluna"], preguntes: ["A quin animal li agrada?", "Com és per dins?", "És dolç?"] },
+    { paraula: "Gelat", icona: "🍦", pistes: ["És molt fred", "Es menja a l'estiu", "Pot ser de xocolata"], preguntes: ["Es desfà si fa calor?", "Quin gust t'agrada?", "Com es menja?"] },
+    { paraula: "Pa", icona: "🥖", pistes: ["Es compra a la fleca", "Serveix per fer entrepans", "Està fet de farina"], preguntes: ["T'agrada el crostó?", "Què hi poses dins?", "Com fa quan està cruixent?"] },
+    { paraula: "Formatge", icona: "🧀", pistes: ["És de color groc", "Té forats", "Li agrada als ratolins"], preguntes: ["Fa bona olor?", "D'on surt?", "És tou?"] },
+    { paraula: "Ou", icona: "🥚", pistes: ["És blanc per fora", "Té un rovell groc", "Si cau es trenca"], preguntes: ["Qui el posa?", "Com es cuina?", "És rodó?"] },
+    { paraula: "Llet", icona: "🥛", pistes: ["És de color blanc", "Ens fa créixer forts", "Surt de la vaca"], preguntes: ["La prens amb cola-cao?", "D'on surt?", "És un líquid?"] },
+    { paraula: "Maduixa", icona: "🍓", pistes: ["És vermella i petita", "Té granets per fora", "És una fruita"], preguntes: ["T'agrada amb nata?", "És dolça o àcida?", "De quin color és?"] },
+    { paraula: "Pastís", icona: "🎂", pistes: ["Es menja als aniversaris", "Hi posem espelmes", "És molt dolç"], preguntes: ["Quantes espelmes hi poses?", "Qui el cuina?", "T'agrada la xocolata?"] },
+    { paraula: "Llimona", icona: "🍋", pistes: ["És groga", "És molt àcida", "Fem suc amb ella"], preguntes: ["Quina cara fas quan la tastes?", "És dolça?", "Per a què serveix?"] },
+    { paraula: "Pastanaga", icona: "🥕", pistes: ["És de color taronja", "Creix sota terra", "Als conills els encanta"], preguntes: ["És bona per als ulls?", "És cruixent?", "On creix?"] },
+    { paraula: "Tomàquet", icona: "🍅", pistes: ["És vermell i rodó", "Es posa a l'amanida", "Es pot sucar al pa"], preguntes: ["T'agrada el pa amb tomàquet?", "És una fruita o verdura?", "Quin color té?"] },
+    { paraula: "Sopa", icona: "🥣", pistes: ["Es menja amb cullera", "Està calenta", "Té fideus"], preguntes: ["Et crema la llengua?", "T'agraden els fideus?", "Quan la mengem?"] },
+    { paraula: "Pizza", icona: "🍕", pistes: ["És rodona", "Té formatge desfet", "Es cou al forn"], preguntes: ["Què hi poses a sobre?", "T'agrada molt?", "Com es talla?"] },
+    { paraula: "Hamburguesa", icona: "🍔", pistes: ["Porta carn i pa", "Es menja amb les mans", "Li pots posar quetxup"], preguntes: ["Què t'agrada posar-hi?", "És gran?", "On la mengem?"] },
+    { paraula: "Raïm", icona: "🍇", pistes: ["Són boletes petites", "Es mengen per cap d'any", "Poden ser verds o negres"], preguntes: ["Tenen pinyols?", "Són dolços?", "Com es diu on creixen?"] },
+    { paraula: "Xocolata", icona: "🍫", pistes: ["És de color marró", "És molt dolça", "Es desfà a la boca"], preguntes: ["T'agrada negra o amb llet?", "És el teu dolç preferit?", "On la guardem?"] },
+    { paraula: "Patata", icona: "🥔", pistes: ["Es fregeixen amb oli", "Creixen sota terra", "Són de color marró"], preguntes: ["T'agraden les patates fregides?", "Són bones?", "On creixen?"] },
+    { paraula: "Meló", icona: "🍈", pistes: ["És una fruita d'estiu", "És molt gran i pesat", "És verd per fora"], preguntes: ["És dolç?", "Té molta aigua?", "Pesa molt?"] },
+    { paraula: "Cirera", icona: "🍒", pistes: ["Són vermelles i bessones", "Tenen un pinyol dins", "Són petites"], preguntes: ["Quantes n'hi ha?", "T'agrada el color vermell?", "On neixen?"] },
+
+    // --- OBJECTES I CASA (20) ---
+    { paraula: "Llit", icona: "🛏️", pistes: ["Serveix per dormir", "Té llençols i coixí", "És molt tou"], preguntes: ["T'agrada fer el ronsa?", "Quin color té el teu llençol?", "A quin habitació està?"] },
+    { paraula: "Cadira", icona: "🪑", pistes: ["Serveix per seure", "Té quatre potes", "N'hi ha a la cuina"], preguntes: ["De quin color és?", "Quantes n'hi ha a taula?", "És còmoda?"] },
+    { paraula: "Televisió", icona: "📺", pistes: ["Hi mirem dibuixos", "Té una pantalla", "Es canvia amb el comandament"], preguntes: ["Quins dibuixos t'agraden?", "És gran o petita?", "Quan la mires?"] },
+    { paraula: "Raspall de dents", icona: "🪥", pistes: ["Serveix per netejar les dents", "S'hi posa pasta", "S'usa després de menjar"], preguntes: ["De quin color és el teu?", "Quantes vegades l'uses?", "A on el guardes?"] },
+    { paraula: "Cullera", icona: "🥄", pistes: ["Serveix per menjar sopa", "S'agafa amb la mà", "No talla"], preguntes: ["Què menges amb ella?", "És de metall o plàstic?", "És gran?"] },
+    { paraula: "Clau", icona: "🔑", pistes: ["Serveix per obrir la porta", "És de metall", "La portem al butxaca"], preguntes: ["Què obre?", "On la guarda el pare o la mare?", "Fa soroll si cau?"] },
+    { paraula: "Sabata", icona: "👟", pistes: ["Es posa als peus", "Serveix per caminar", "Té cordons o velcro"], preguntes: ["Te les saps posar sol?", "De quin color són?", "On les guardes?"] },
+    { paraula: "Mitjó", icona: "🧦", pistes: ["Es posa abans que la sabata", "Escalfa els peus", "Sempre n'hi ha dos d'iguals"], preguntes: ["En portes un de cada color?", "Són suaus?", "On estan els teus?"] },
+    { paraula: "Samarreta", icona: "👕", pistes: ["Es posa pel cap", "Té mànigues", "N'hi ha de molts colors"], preguntes: ["Què hi ha dibuixat a la teva?", "T'agrada portar-la?", "És d'estiu o d'hivern?"] },
+    { paraula: "Mirall", icona: "🪞", pistes: ["Serveix per veure'ns", "Està al bany", "Si el mires, et veus a tu"], preguntes: ["Què veus quan el mires?", "Fes una cara divertida!", "És de vidre?"] },
+    { paraula: "Telèfon", icona: "📱", pistes: ["Serveix per parlar amb la família", "Té pantalla tàctil", "Fa música quan truquen"], preguntes: ["A qui vols trucar?", "Té jocs?", "De qui és?"] },
+    { paraula: "Paraigües", icona: "☂️", pistes: ["S'usa quan plou", "Ens protegeix de l'aigua", "Es pot obrir i tancar"], preguntes: ["De quin color és?", "Quan l'agafem?", "T'agrada portar-lo?"] },
+    { paraula: "Rellotge", icona: "⌚", pistes: ["Diu l'hora", "Fa tic-tac", "Té busques o números"], preguntes: ["Quina hora és?", "On en tens un?", "És gran?"] },
+    { paraula: "Ulleres", icona: "👓", pistes: ["Es posen al nas", "Ajuden a veure-hi millor", "Tenen dos vidres"], preguntes: ["Qui en porta a la teva família?", "De quin color són?", "Per a què serveixen?"] },
+    { paraula: "Banyera", icona: "🛁", pistes: ["Ens hi rentem", "S'omple d'aigua i sabó", "Hi ha joguines per nedar"], preguntes: ["T'agraden les bombolles?", "L'aigua està calenta?", "Quin animal de goma tens?"] },
+    { paraula: "Motxilla", icona: "🎒", pistes: ["Es porta a l'esquena", "Serveix per portar llibres", "Anem a l'escola amb ella"], preguntes: ["Què portes a dins?", "De quin color és?", "Pesa molt?"] },
+    { paraula: "Bicicleta", icona: "🚲", pistes: ["Té dues rodes", "Té pedals", "Portem casc per seguretat"], preguntes: ["Saps anar sense rodetes?", "De quin color és la teva?", "On vas amb ella?"] },
+    { paraula: "Pinta", icona: "🪮", pistes: ["Serveix per posar bé el pèl", "Té moltes pues", "La fem servir al matí"], preguntes: ["Et saps pentinar?", "Tens el pèl llarg?", "A on està?"] },
+    { paraula: "Llum", icona: "💡", pistes: ["Ens ajuda a veure-hi de nit", "S'encén amb un botó", "No s'ha de tocar perquè crema"], preguntes: ["On està el botó?", "L'apagues quan surts?", "N'hi ha al sostre?"] },
+    { paraula: "Got", icona: "🥛", pistes: ["Serveix per beure aigua", "És de vidre o plàstic", "S'omple a l'aixeta"], preguntes: ["Què vols beure?", "És ple o buit?", "Vols un suc?"] },
+
+    // --- ESCOLA I MATERIAL (15) ---
+    { paraula: "Llapis", icona: "✏️", pistes: ["Serveix per dibuixar", "Es pot esborrar", "S'ha de fer punta"], preguntes: ["Què vols dibuixar?", "De quin color pinta?", "On és la punta?"] },
+    { paraula: "Llibre", icona: "📚", pistes: ["Té moltes fulles", "Explica històries", "Té dibuixos bonics"], preguntes: ["Quin és el teu conte preferit?", "Qui te'l llegeix?", "T'agrada mirar els dibuixos?"] },
+    { paraula: "Tisores", icona: "✂️", pistes: ["Serveixen per tallar paper", "Tenen dues orelles", "S'han d'usar amb cura"], preguntes: ["Saps tallar recte?", "Què vols retallar?", "De quin color són?"] },
+    { paraula: "Goma", icona: "🧼", pistes: ["Esborra el llapis", "Es fa petita quan s'usa", "S'ha de fregar el paper"], preguntes: ["Què vols esborrar?", "De quin color és?", "És tova?"] },
+    { paraula: "Colors", icona: "🖍️", pistes: ["Serveixen per pintar", "N'hi ha de molts tipus", "Fan els dibuixos bonics"], preguntes: ["Quin és el teu color preferit?", "Pintem un arc de sant martí?", "Quins tens a l'estutx?"] },
+    { paraula: "Pissarra", icona: "👩‍🏫", pistes: ["La mestra hi escriu", "És molt gran", "Es pot esborrar amb un drap"], preguntes: ["De quin color és?", "Què hi ha escrit avui?", "T'agrada escriure-hi?"] },
+    { paraula: "Paper", icona: "📄", pistes: ["Serveix per escriure", "És de color blanc", "Es pot doblegar"], preguntes: ["Fem un avió de paper?", "Què hi vols dibuixar?", "És fi o gruixut?"] },
+    { paraula: "Pati", icona: "🛝", pistes: ["Hi anem a jugar", "Hi ha tobogans", "Sortim quan sona el timbre"], preguntes: ["Amb qui jugues?", "T'agrada el tobogan?", "Què menges per esmorzar?"] },
+    { paraula: "Mestra", icona: "👩‍🏫", pistes: ["Ens ensenya moltes coses", "Ens explica contes", "Ens ajuda a l'escola"], preguntes: ["Com es diu la teva?", "És simpàtica?", "Què t'ha explicat avui?"] },
+    { paraula: "Pilota", icona: "⚽", pistes: ["És rodona", "Bota molt", "Li donem cops de peu"], preguntes: ["T'agrada jugar a futbol?", "De quin color és?", "Com bota?"] },
+    { paraula: "Cola", icona: "🧪", pistes: ["Serveix per enganxar", "S'ha de posar poca", "Enganxa els papers"], preguntes: ["T'han quedat els dits enganxats?", "Què vols fer avui?", "És forta?"] },
+    { paraula: "Pinzell", icona: "🖌️", pistes: ["Serveix per pintar amb pintura", "Té pèls a la punta", "S'ha de rentar amb aigua"], preguntes: ["De quin color és la pintura?", "Què vols pintar?", "És suau?"] },
+    { paraula: "Estutx", icona: "👝", pistes: ["Guarda els llapis", "Té una cremallera", "Està dins la motxilla"], preguntes: ["Què hi tens dins?", "T'agrada?", "El saps tancar?"] },
+    { paraula: "Regle", icona: "📏", pistes: ["Serveix per fer ratlles rectes", "Té números", "És llarg i prim"], preguntes: ["És llarg?", "Quants números veus?", "De quin color és?"] },
+    { paraula: "Contes", icona: "📖", pistes: ["Tenen prínceps i dracs", "Els llegim abans de dormir", "Són màgics"], preguntes: ["Quin és el millor conte?", "Hi ha un llop?", "T'agrada el final?"] },
+
+    // --- NATURA I TEMPS (10) ---
+    { paraula: "Sol", icona: "☀️", pistes: ["És al cel", "Ens dona calor", "És de color groc"], preguntes: ["Quan surt el sol?", "Què ens posem per al sol?", "T'agrada que faci calor?"] },
+    { paraula: "Lluna", icona: "🌙", pistes: ["Surt de nit", "És de color blanc", "A vegades és rodona"], preguntes: ["La veus des de la finestra?", "Té llum pròpia?", "T'agrada mirar-la?"] },
+    { paraula: "Núvol", icona: "☁️", pistes: ["Està al cel", "Sembla cotó fluix", "D'aquí surt la pluja"], preguntes: ["De quin color és?", "Quina forma té?", "Són suaus?"] },
+    { paraula: "Pluja", icona: "🌧️", pistes: ["Cau del cel", "Ens mulla", "Necessitem paraigües"], preguntes: ["T'agrada saltar als xics?", "Com sona la pluja?", "L'aigua és freda?"] },
+    { paraula: "Arbre", icona: "🌳", pistes: ["Té fulles verdes", "Té un tronc de fusta", "Hi viuen els ocells"], preguntes: ["És alt?", "Té fruita?", "Com són les fulles?"] },
+    { paraula: "Flor", icona: "🌸", pistes: ["Fa molt bona olor", "Té pètals de colors", "Necessita aigua"], preguntes: ["De quin color és?", "T'agrada olorar-la?", "On creixen?"] },
+    { paraula: "Mar", icona: "🌊", pistes: ["Hi ha molta aigua", "L'aigua és salada", "Hi ha sorra"], preguntes: ["T'agrada banyar-te?", "Has vist peixos?", "On és la platja?"] },
+    { paraula: "Muntanya", icona: "⛰️", pistes: ["És molt alta", "A vegades té neu al cim", "Hi anem d'excursió"], preguntes: ["És difícil pujar-hi?", "Què veus des de dalt?", "Hi ha arbres?"] },
+    { paraula: "Arc de sant martí", icona: "🌈", pistes: ["Té set colors", "Surt quan plou i fa sol", "És molt bonic"], preguntes: ["Quins colors veus?", "És màgic?", "L'has vist mai al cel?"] },
+    { paraula: "Estel", icona: "⭐", pistes: ["Brilla de nit", "Està molt lluny", "N'hi ha milions"], preguntes: ["Brillen molt?", "En veus alguna de gran?", "T'agraden?"] },
+
+    // --- TRANSPORT (10) ---
+    { paraula: "Avió", icona: "✈️", pistes: ["Vola pel cel", "Té ales", "Porta molta gent"], preguntes: ["On vols anar volant?", "Fa molt soroll?", "Com de gran és?"] },
+    { paraula: "Tren", icona: "🚂", pistes: ["Va per sobre de vies", "Fa txu-txu", "És molt llarg"], preguntes: ["Has pujat mai a un tren?", "On va?", "Té molts vagons?"] },
+    { paraula: "Autobús", icona: "🚌", pistes: ["Porta els nens a l'escola", "És molt gran", "Té moltes finestres"], preguntes: ["Qui condueix?", "Has pujat a l'autobús?", "De quin color és?"] },
+    { paraula: "Vaixell", icona: "🚢", pistes: ["Va per sobre de l'aigua", "És molt gran", "Flota al mar"], preguntes: ["Has vist un vaixell?", "On va?", "És gran o petit?"] },
+    { paraula: "Moto", icona: "🏍️", pistes: ["Té dues rodes", "Fa molt soroll", "El conductor porta casc"], preguntes: ["És ràpida?", "Porta casc?", "De quin color és?"] },
+    { paraula: "Camió", icona: "🚚", pistes: ["Porta coses molt pesades", "És molt llarg", "Té rodes grans"], preguntes: ["Què porta a dins?", "Fa soroll?", "És més gran que un cotxe?"] },
+    { paraula: "Helicòpter", icona: "🚁", pistes: ["Té una hèlice que gira", "Vola molt alt", "Fa molt soroll"], preguntes: ["Com gira l'hèlice?", "On pot aterrar?", "És ràpid?"] },
+    { paraula: "Coet", icona: "🚀", pistes: ["Va a l'espai", "Va molt ràpid", "Arriba a la lluna"], preguntes: ["Vols ser astronauta?", "És ràpid?", "On va?"] },
+    { paraula: "Tractor", icona: "🚜", pistes: ["Està al camp", "Té les rodes de darrere gegants", "Ajuda als pagesos"], preguntes: ["De quin color és?", "Què fa al camp?", "És gran?"] },
+    { paraula: "Patinet", icona: "🛴", pistes: ["Té rodes petites", "S'ha d'empènyer amb el peu", "En portem al parc"], preguntes: ["És divertit?", "De quin color és el teu?", "Portes casc?"] }
+]; 
+
+        let currentMode = '';
+        let currentIndex = 0;
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function startGame(mode) {
+            currentMode = mode;
+            currentIndex = Math.floor(Math.random() * wordBank.length);
+            showScreen(mode === 'guess' ? 'screen-guess' : 'screen-describe');
+            
+            if(mode === 'guess') {
+                setupGuessRound();
+            } else {
+                setupDescribeRound();
+            }
+        }
+
+        // --- MODE ENDEVINAR ---
+        function setupGuessRound() {
+            const item = wordBank[currentIndex];
+            const clueText = document.getElementById('clue-text');
+            const optionsDiv = document.getElementById('guess-options');
+            const feedback = document.getElementById('feedback-guess');
+            
+            feedback.innerText = "";
+            optionsDiv.innerHTML = "";
+            
+            // Generar 3 opcions (la correcta + 2 aleatòries)
+            let options = [item];
+            while(options.length < 4) {
+                let randomItem = wordBank[Math.floor(Math.random() * wordBank.length)];
+                if(!options.includes(randomItem)) options.push(randomItem);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerText = opt.icona;
+                card.onclick = () => checkAnswer(opt.paraula === item.paraula);
+                optionsDiv.appendChild(card);
+            });
+
+            speak(item.pistes[0]);
+            clueText.innerText = "Escolta la pista...";
+        }
+
+        function checkAnswer(isCorrect) {
+            const feedback = document.getElementById('feedback-guess');
+            if(isCorrect) {
+                playTone(600, 0.2); // So d'èxit
+                feedback.innerText = "🌟 Molt bé! Ets un gran detectiu!";
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % wordBank.length;
+                    setupGuessRound();
+                }, 2000);
+            } else {
+                playTone(200, 0.3); // So d'error suau
+                feedback.innerText = "Torna-ho a provar, tu pots!";
+            }
+        }
+
+        function repeatClue() {
+            speak(wordBank[currentIndex].pistes[0]);
+        }
+
+        // --- MODE EXPLICAR ---
+        function setupDescribeRound() {
+            const item = wordBank[currentIndex];
+            document.getElementById('target-image').innerText = item.icona;
+            const qIndex = Math.floor(Math.random() * item.preguntes.length);
+            document.getElementById('guide-question').innerText = "Pista per ajudar-te: " + item.preguntes[qIndex];
+            speak("Explica'm què veus. " + item.preguntes[qIndex]);
+        }
+
+        function nextDescribe() {
+            currentIndex = (currentIndex + 1) % wordBank.length;
+            setupDescribeRound();
+        }
+
+        // --- UTILITATS ---
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function showStart() { showScreen('screen-start'); }
+
+        function togglePedagogy() {
+            const modal = document.getElementById('pedagogical-modal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function speak(text) {
+            const msg = new SpeechSynthesisUtterance();
+            msg.text = text;
+            msg.lang = 'ca-ES';
+            msg.rate = 0.9;
+            window.speechSynthesis.speak(msg);
+        }
+
+        function playTone(freq, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+    </script>
+</body>
+</html>
